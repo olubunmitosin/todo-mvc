@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Repository\TodoApiRepository;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    protected $todoRepository;
 
     /**
      * Create a new controller instance.
@@ -17,7 +15,6 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->todoRepository = new TodoApiRepository();
     }
 
     /**
@@ -27,8 +24,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $todos = $this->todoRepository->getAllTodos();
-        return view('home', compact('todos'));
+        return view('home');
     }
 
     /**
