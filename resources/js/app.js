@@ -4,6 +4,7 @@ import moment from 'moment';
 let baseUrl = import.meta.env.VITE_BACKEND_ENDPOINT;
 let username = import.meta.env.VITE_CLIENT_USERNAME;
 let password = import.meta.env.VITE_CLIENT_PASSWORD;
+let userId = window.userID;
 let headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
@@ -59,8 +60,8 @@ if (document.getElementById('todos')) {
     checkAndSetAuthWithServer(function (headers) {
         const instance = getAxiosInstance(headers);
         // Get todos
-        instance.get('/todos').then(function (todosResponse) {
-            if (todosResponse.data && todosResponse.data.status) {
+        instance.get('/todos?user_id=' + userId).then(function (todosResponse) {
+            if (todosResponse.data && todosResponse.data.status && todosResponse.data.response.length > 0) {
                 const todos = todosResponse.data.response;
                 buildTodoList(todos);
             } else {
@@ -77,7 +78,7 @@ if (document.getElementById('todos')) {
         checkAndSetAuthWithServer(function (headers) {
             const instance = getAxiosInstance(headers);
             // Delete todo
-            instance.post('/todos/delete', {id: id}).then(function (todosResponse) {
+            instance.post('/todos/delete', {id: id, user_id: userId}).then(function (todosResponse) {
                 if (todosResponse.data && todosResponse.data.status) {
                     const todos = todosResponse.data.response;
                     window.location.reload();
@@ -117,6 +118,8 @@ if (document.getElementById("edit-todo-view")) {
             const instance = getAxiosInstance(headers);
             // Update todo
             values.id = page.data('todo-id');
+            values.user_id = userId;
+            values.due_date = moment(values.due_date).format('YYYY-MM-DD HH:mm:ss');
             instance.post('/todos/update', values).then(function (todosResponse) {
                 if (todosResponse.data && todosResponse.data.status) {
                     const message = todosResponse.data.message;
@@ -139,14 +142,15 @@ if (document.getElementById("create-todo")) {
         checkAndSetAuthWithServer(function (headers) {
             const instance = getAxiosInstance(headers);
             // Update todo
-            values.due_date = moment(values.due_date).format('YYYY-MM-DD');
+            values.due_date = moment(values.due_date).format('YYYY-MM-DD HH:mm:ss');
+            values.user_id = userId;
             instance.post('/todos/create', values).then(function (todosResponse) {
                 if (todosResponse.data && todosResponse.data.status) {
                     const message = todosResponse.data.message;
                     
                     setTimeout(() => {
                         window.location.href = "/";
-                    })
+                    });
                 }
             });
         });
