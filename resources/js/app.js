@@ -1,5 +1,6 @@
 import './bootstrap';
 import moment from 'moment';
+import Notify from 'notifyjs';
 
 let baseUrl = import.meta.env.VITE_BACKEND_ENDPOINT;
 let username = import.meta.env.VITE_CLIENT_USERNAME;
@@ -18,6 +19,35 @@ function getAxiosInstance(headers) {
         headers: headers
     });
 }
+
+
+function doNotification (title, message) {
+    var myNotification = new Notify(title, {
+        body: message,
+        timeout: 1500,
+    });
+}
+
+
+function onPermissionDenied() {
+    console.warn('Permission has been denied by the user');
+}
+
+
+function fireNotification(title, message)
+{
+    if (!Notify.needsPermission) {
+        doNotification(title, message);
+    } else if (Notify.isSupported()) {
+        Notify.requestPermission(onPermissionGranted, onPermissionDenied);
+    }
+
+    function onPermissionGranted() {
+        console.log('Permission has been granted by the user');
+        doNotification(title, message);
+    }
+}
+
 
 function checkAndSetAuthWithServer(callback) {
     const instance = getAxiosInstance(headers);
@@ -80,8 +110,11 @@ if (document.getElementById('todos')) {
             // Delete todo
             instance.post('/todos/delete', {id: id, user_id: userId}).then(function (todosResponse) {
                 if (todosResponse.data && todosResponse.data.status) {
-                    const todos = todosResponse.data.response;
-                    window.location.reload();
+                    const message = todosResponse.data.message;
+                    fireNotification("Success!", message);
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 1000);
                 }
             });
         });
@@ -123,7 +156,10 @@ if (document.getElementById("edit-todo-view")) {
             instance.post('/todos/update', values).then(function (todosResponse) {
                 if (todosResponse.data && todosResponse.data.status) {
                     const message = todosResponse.data.message;
-                    console.log(message);
+                    fireNotification("Success!", message);
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1000);
                 }
             });
         });
