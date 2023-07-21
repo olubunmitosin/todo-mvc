@@ -15,7 +15,7 @@ let headers = {
 function getAxiosInstance(headers) {
     return axios.create({
         baseURL: `${baseUrl}/api`,
-        timeout: 1000,
+        timeout: 10000,
         headers: headers
     });
 }
